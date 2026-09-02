@@ -41,3 +41,105 @@ Error generating stack: `+o.message+`
   
 </body>
 </html>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SEO Packages - Webnora</title>
+<style>
+body{margin:0;font-family:Inter,sans-serif;background:#0a0a0f;color:#fff}
+.container{max-width:1200px;margin:0 auto;padding:60px 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:25px}
+.card{background:#111113;border:1px solid #27272a;border-radius:20px;padding:30px}
+.card.popular{background:linear-gradient(135deg,#6366f1,#8b5cf6);transform:scale(1.05)}
+.btn{width:100%;padding:12px;border-radius:12px;border:none;cursor:pointer;font-weight:700}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);align-items:center;justify-content:center}
+.modal.active{display:flex}
+.modal-box{background:#18181b;padding:30px;border-radius:20px;width:90%;max-width:400px}
+input,select{width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #27272a;background:#09090b;color:white}
+</style>
+</head>
+<body>
+<div class="container">
+<h1 style="text-align:center;font-size:3rem">SEO Packages</h1>
+<div class="grid" id="packages"></div>
+</div>
+
+<div class="modal" id="orderModal">
+<div class="modal-box">
+<h3 id="modalPackage">Order Package</h3>
+<input id="cName" placeholder="Your Name">
+<input id="cEmail" placeholder="Email">
+<input id="cPhone" placeholder="WhatsApp Number">
+<select id="cWebsite"><option>Website Type</option><option>Business</option><option>E-commerce</option><option>Blog</option></select>
+<button class="btn" style="background:#6366f1;color:white;margin-top:15px" onclick="submitOrder()">Confirm Order - Pay Later</button>
+<button class="btn" style="background:#27272a;color:white;margin-top:10px" onclick="closeModal()">Cancel</button>
+</div>
+</div>
+
+<script>
+const packagesData = [
+  {id:'basic',name:'Basic SEO',price:199,features:['10 Keywords','On-Page 10 Pages','Technical Audit','GSC Setup','Sitemap/Robots','Monthly Report']},
+  {id:'standard',name:'Standard SEO',price:399,popular:true,features:['25 Keywords','On-Page 25 Pages','Advanced Technical','JSON-LD + High SEO','4 Blogs/month','10 Links','GMB SEO','Weekly Reports']},
+  {id:'premium',name:'Premium SEO',price:799,features:['50+ Keywords','Unlimited Pages','E-commerce SEO','Speed Optimize','8 Blogs','30 Premium Links','Local+International','24/7 Support']}
+];
+
+let selectedPkg = null;
+
+function render(){
+  const grid = document.getElementById('packages');
+  grid.innerHTML = packagesData.map(p=>`
+    <div class="card ${p.popular?'popular':''}">
+      ${p.popular?'<div style="background:white;color:#6366f1;padding:4px 12px;border-radius:20px;font-size:0.7rem;font-weight:800;display:inline-block;margin-bottom:15px">MOST POPULAR</div>':''}
+      <h3>${p.name}</h3>
+      <div style="font-size:2.5rem;font-weight:800">$${p.price}<span style="font-size:1rem">/month</span></div>
+      <ul style="line-height:2.2;padding-left:18px">${p.features.map(f=>`<li>${f}</li>`).join('')}</ul>
+      <button class="btn" style="background:${p.popular?'white':'#27272a'};color:${p.popular?'#6366f1':'white'}" onclick="openModal('${p.id}')">Buy Now</button>
+    </div>
+  `).join('');
+}
+
+function openModal(id){
+  selectedPkg = packagesData.find(x=>x.id===id);
+  document.getElementById('modalPackage').innerText = 'Order: ' + selectedPkg.name + ' - $'+selectedPkg.price;
+  document.getElementById('orderModal').classList.add('active');
+}
+function closeModal(){document.getElementById('orderModal').classList.remove('active')}
+
+async function submitOrder(){
+  const data = {
+    packageId: selectedPkg.id,
+    packageName: selectedPkg.name,
+    price: selectedPkg.price,
+    name: document.getElementById('cName').value,
+    email: document.getElementById('cEmail').value,
+    phone: document.getElementById('cPhone').value,
+    websiteType: document.getElementById('cWebsite').value,
+    date: new Date().toISOString()
+  };
+  
+  // Backend API Call
+  const res = await fetch('/api/orders', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(data)
+  });
+  
+  if(res.ok){
+    alert('Order Received! We will contact you on WhatsApp within 2 hours.');
+    closeModal();
+  } else {
+    // Fallback - local storage if backend not connected
+    let orders = JSON.parse(localStorage.getItem('webnora_orders')||'[]');
+    orders.push(data);
+    localStorage.setItem('webnora_orders', JSON.stringify(orders));
+    alert('Order Saved Locally! (Connect backend for email/WhatsApp)');
+    closeModal();
+  }
+}
+
+render();
+</script>
+</body>
+</html>
